@@ -27,8 +27,9 @@ pipeline {
                     echo "=== 環境資訊 ==="
                     echo "Jenkins 版本: $(java -version 2>&1 | head -1)"
                     echo "Git 版本: $(git --version)"
-                    echo "Terraform 版本: $(terraform --version | head -1)"
+                    echo "Terraform 版本: $(which terraform && terraform --version | head -1 || echo 'Terraform 未找到')"
                     echo "當前時間: $(date)"
+                    echo "PATH: $PATH"
                 '''
             }
         }
@@ -56,6 +57,10 @@ pipeline {
                 dir('terraform') {
                     sh '''
                         echo "=== Terraform 初始化 ==="
+                        echo "當前目錄: $(pwd)"
+                        echo "檔案列表:"
+                        ls -la
+                        echo "Terraform 路徑: $(which terraform)"
                         terraform init -upgrade
                         echo "✅ Terraform 初始化完成"
                     '''
@@ -198,15 +203,15 @@ pipeline {
         }
         
         always {
-            echo '🧹 清理工作空間...'
-            cleanWs()
-            
             // 顯示最終狀態
             sh '''
                 echo "=== 部署完成 ==="
                 echo "時間: $(date)"
                 echo "狀態: ${BUILD_STATUS:-UNKNOWN}"
             '''
+            
+            echo '🧹 清理工作空間...'
+            cleanWs()
         }
     }
 }
