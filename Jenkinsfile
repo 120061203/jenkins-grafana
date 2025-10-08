@@ -6,10 +6,6 @@ pipeline {
         GRAFANA_URL = 'https://xsong.grafana.net'
         GRAFANA_API_KEY = credentials('grafana-api-key')  // 從 Jenkins 憑證管理取得
         
-        // Terraform 設定
-        TF_VAR_grafana_url = "${GRAFANA_URL}"
-        TF_VAR_grafana_api_key = "${GRAFANA_API_KEY}"
-        
         // 部署資訊
         DASHBOARD_TITLE = "xsong.us 網站監控 Dashboard"
         DASHBOARD_TAGS = "xsong.us,website,monitoring,traffic,performance"
@@ -55,15 +51,20 @@ pipeline {
             steps {
                 echo '🚀 初始化 Terraform...'
                 dir('terraform') {
-                    sh '''
-                        echo "=== Terraform 初始化 ==="
-                        echo "當前目錄: $(pwd)"
-                        echo "檔案列表:"
-                        ls -la
-                        echo "Terraform 路徑: $(which terraform)"
-                        terraform init -upgrade
-                        echo "✅ Terraform 初始化完成"
-                    '''
+                    withEnv([
+                        "TF_VAR_grafana_url=${GRAFANA_URL}",
+                        "TF_VAR_grafana_api_key=${GRAFANA_API_KEY}"
+                    ]) {
+                        sh '''
+                            echo "=== Terraform 初始化 ==="
+                            echo "當前目錄: $(pwd)"
+                            echo "檔案列表:"
+                            ls -la
+                            echo "Terraform 路徑: $(which terraform)"
+                            terraform init -upgrade
+                            echo "✅ Terraform 初始化完成"
+                        '''
+                    }
                 }
             }
         }
@@ -72,11 +73,16 @@ pipeline {
             steps {
                 echo '📋 執行 Terraform 規劃...'
                 dir('terraform') {
-                    sh '''
-                        echo "=== Terraform 規劃 ==="
-                        terraform plan -out=tfplan -detailed-exitcode
-                        echo "✅ Terraform 規劃完成"
-                    '''
+                    withEnv([
+                        "TF_VAR_grafana_url=${GRAFANA_URL}",
+                        "TF_VAR_grafana_api_key=${GRAFANA_API_KEY}"
+                    ]) {
+                        sh '''
+                            echo "=== Terraform 規劃 ==="
+                            terraform plan -out=tfplan -detailed-exitcode
+                            echo "✅ Terraform 規劃完成"
+                        '''
+                    }
                 }
             }
         }
@@ -85,11 +91,16 @@ pipeline {
             steps {
                 echo '🔧 執行 Terraform 部署...'
                 dir('terraform') {
-                    sh '''
-                        echo "=== Terraform 部署 ==="
-                        terraform apply -auto-approve tfplan
-                        echo "✅ Terraform 部署完成"
-                    '''
+                    withEnv([
+                        "TF_VAR_grafana_url=${GRAFANA_URL}",
+                        "TF_VAR_grafana_api_key=${GRAFANA_API_KEY}"
+                    ]) {
+                        sh '''
+                            echo "=== Terraform 部署 ==="
+                            terraform apply -auto-approve tfplan
+                            echo "✅ Terraform 部署完成"
+                        '''
+                    }
                 }
             }
         }
