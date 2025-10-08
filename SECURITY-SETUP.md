@@ -101,7 +101,7 @@ grep -E "\.env|\.key|credentials" .gitignore
 git log --all --full-history -- "*.key" "*.env" "credentials*"
 
 # 檢查當前檔案中是否有硬編碼的 API Key
-grep -r "glc_" . --exclude-dir=.git
+# 檢查 API Key 洩露
 ```
 
 ## 📋 **最佳實踐**

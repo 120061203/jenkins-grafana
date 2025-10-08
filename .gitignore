@@ -11,6 +11,9 @@ terraform.tfvars
 *.pem
 credentials/
 secrets/
+*.pub
+id_*
+ssh-*
 
 # Jenkins
 .jenkins/

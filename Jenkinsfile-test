@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('測試連接') {
+            steps {
+                echo '🔍 測試基本連接...'
+                sh '''
+                    echo "=== 環境檢查 ==="
+                    echo "Jenkins 版本: $(java -version 2>&1 | head -1)"
+                    echo "當前時間: $(date)"
+                    echo "工作目錄: $(pwd)"
+                    echo "檔案列表:"
+                    ls -la
+                '''
+            }
+        }
+        
+        stage('檢查 Dashboard 檔案') {
+            steps {
+                echo '📊 檢查 Dashboard 檔案...'
+                sh '''
+                    echo "=== Dashboard 檔案檢查 ==="
+                    if [ -f "dashboard.json" ]; then
+                        echo "✅ dashboard.json 存在"
+                        echo "檔案大小: $(wc -c < dashboard.json) bytes"
+                        echo "JSON 格式檢查:"
+                        python -m json.tool dashboard.json > /dev/null && echo "✅ JSON 格式正確" || echo "❌ JSON 格式錯誤"
+                    else
+                        echo "❌ dashboard.json 不存在"
+                    fi
+                '''
+            }
+        }
+        
+        stage('測試 Grafana 連接') {
+            steps {
+                echo '🌐 測試 Grafana 連接...'
+                script {
+                    try {
+                        def response = sh(
+                            script: 'curl -s -o /dev/null -w "%{http_code}" https://xsong.grafana.net',
+                            returnStdout: true
+                        )
+                        echo "Grafana 連接狀態: ${response}"
+                    } catch (Exception e) {
+                        echo "❌ Grafana 連接失敗: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo '🧹 測試完成'
+        }
+    }
+}
