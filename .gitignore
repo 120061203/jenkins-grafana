@@ -5,6 +5,13 @@
 .terraform.lock.hcl
 terraform.tfvars
 
+# 敏感資訊
+.env
+*.key
+*.pem
+credentials/
+secrets/
+
 # Jenkins
 .jenkins/
 

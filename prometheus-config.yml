@@ -5,9 +5,7 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
-rule_files:
-  # 可以添加告警規則檔案
-  # - "alert_rules.yml"
+# rule_files 已移至檔案底部
 
 scrape_configs:
   # 監控 Prometheus 本身
@@ -18,19 +16,19 @@ scrape_configs:
   # 監控 Node Exporter (系統指標)
   - job_name: 'node-exporter'
     static_configs:
-      - targets: ['localhost:9100']
+      - targets: ['node-exporter:9100']
     scrape_interval: 5s
 
   # 監控 Nginx (網站流量指標)
   - job_name: 'nginx'
     static_configs:
-      - targets: ['localhost:9113']  # nginx-prometheus-exporter
+      - targets: ['nginx-exporter:9113']  # nginx-prometheus-exporter
     scrape_interval: 5s
 
   # 監控 MySQL (資料庫指標)
   - job_name: 'mysql'
     static_configs:
-      - targets: ['localhost:9104']  # mysqld-exporter
+      - targets: ['mysql-exporter:9104']  # mysqld-exporter
     scrape_interval: 5s
 
   # 監控 xsong.us 網站可用性 (Blackbox Exporter)
@@ -47,15 +45,25 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: localhost:9115  # blackbox-exporter
+        replacement: blackbox-exporter:9115  # 使用容器名稱
 
-  # 監控其他網站服務
-  - job_name: 'website-services'
+  # 監控 xsong.us 網站服務
+  - job_name: 'xsong.us-services'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
     static_configs:
-      - targets: 
-        - 'xsong.us:80'
-        - 'xsong.us:443'
-    scrape_interval: 10s
+      - targets:
+        - https://xsong.us
+        - http://xsong.us
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+    scrape_interval: 30s
 
 # 告警規則範例
 alerting:

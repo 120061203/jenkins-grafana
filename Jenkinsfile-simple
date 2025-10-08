@@ -1,0 +1,96 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Grafana Cloud 設定 (請替換為您的實際值)
+        GRAFANA_URL = 'https://your-instance.grafana.net'
+        GRAFANA_API_KEY = credentials('grafana-api-key')
+    }
+    
+    stages {
+        stage('🚀 開始部署') {
+            steps {
+                echo '🔍 開始自動部署流程...'
+                echo "📊 目標: xsong.us 網站監控 Dashboard"
+                echo "🌐 Grafana URL: ${GRAFANA_URL}"
+            }
+        }
+        
+        stage('📥 拉取程式碼') {
+            steps {
+                echo '🔍 正在拉取最新程式碼...'
+                checkout scm
+                
+                sh '''
+                    echo "=== Git 資訊 ==="
+                    echo "分支: $(git branch --show-current)"
+                    echo "提交: $(git log -1 --pretty=format:"%h - %s")"
+                '''
+                
+                echo '✅ 程式碼拉取完成'
+            }
+        }
+        
+        stage('📊 上傳 Dashboard') {
+            steps {
+                echo '📊 上傳 Dashboard 到 Grafana Cloud...'
+                script {
+                    // 讀取 dashboard.json
+                    def dashboardContent = readFile('dashboard.json')
+                    
+                    // 上傳到 Grafana
+                    sh """
+                        curl -X POST \\
+                            -H "Authorization: Bearer ${GRAFANA_API_KEY}" \\
+                            -H "Content-Type: application/json" \\
+                            -d '${dashboardContent}' \\
+                            ${GRAFANA_URL}/api/dashboards/db \\
+                            -w "\\nHTTP_STATUS:%{http_code}\\n"
+                    """
+                }
+                echo '✅ Dashboard 上傳完成'
+            }
+        }
+        
+        stage('🔍 驗證部署') {
+            steps {
+                echo '🔍 驗證部署結果...'
+                script {
+                    def searchResult = sh(
+                        script: """
+                            curl -s -H "Authorization: Bearer ${GRAFANA_API_KEY}" \\
+                                "${GRAFANA_URL}/api/search?query=xsong.us" \\
+                                -w "\\nHTTP_STATUS:%{http_code}\\n"
+                        """,
+                        returnStdout: true
+                    )
+                    
+                    echo "🔍 搜尋結果: ${searchResult}"
+                    
+                    if (searchResult.contains('xsong.us')) {
+                        echo '✅ Dashboard 驗證成功！'
+                    } else {
+                        echo '⚠️ Dashboard 驗證失敗，請手動檢查'
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '🎉 部署成功！'
+            echo "📊 請前往 ${GRAFANA_URL} 查看您的 Dashboard"
+            echo "📧 告警將發送到: me@xsong.us"
+        }
+        
+        failure {
+            echo '❌ 部署失敗！'
+            echo '🔍 請檢查 Grafana Cloud 設定'
+        }
+        
+        always {
+            echo '🧹 清理完成'
+        }
+    }
+}

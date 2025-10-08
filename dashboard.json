@@ -12,7 +12,7 @@
         "type": "stat",
         "targets": [
           {
-            "expr": "probe_success{job=\"xsong.us-monitor\"}",
+            "expr": "probe_success{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
             "legendFormat": "xsong.us 可用性",
             "refId": "A"
           }
@@ -78,7 +78,7 @@
         "type": "stat",
         "targets": [
           {
-            "expr": "probe_duration_seconds{job=\"xsong.us-monitor\"}",
+            "expr": "probe_duration_seconds{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
             "legendFormat": "回應時間",
             "refId": "A"
           }
@@ -144,7 +144,7 @@
         "type": "stat",
         "targets": [
           {
-            "expr": "probe_http_status_code{job=\"xsong.us-monitor\"}",
+            "expr": "probe_http_status_code{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
             "legendFormat": "HTTP 狀態碼",
             "refId": "A"
           }
@@ -170,12 +170,16 @@
                   "value": null
                 },
                 {
+                  "color": "green",
+                  "value": 200
+                },
+                {
                   "color": "yellow",
                   "value": 300
                 },
                 {
-                  "color": "green",
-                  "value": 200
+                  "color": "red",
+                  "value": 400
                 }
               ]
             },
@@ -210,7 +214,7 @@
         "type": "stat",
         "targets": [
           {
-            "expr": "probe_ssl_earliest_cert_expiry{job=\"xsong.us-monitor\"} - time()",
+            "expr": "probe_ssl_earliest_cert_expiry{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"} - time()",
             "legendFormat": "SSL 憑證剩餘天數",
             "refId": "A"
           }
@@ -276,24 +280,14 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "rate(nginx_http_requests_total{host=\"xsong.us\"}[5m])",
-            "legendFormat": "每秒請求數 (RPS)",
+            "expr": "probe_duration_seconds{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+            "legendFormat": "網站回應時間",
             "refId": "A"
           },
           {
-            "expr": "rate(nginx_http_requests_total{host=\"xsong.us\",status=~\"2..\"}[5m])",
-            "legendFormat": "成功請求 (2xx)",
+            "expr": "probe_success{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+            "legendFormat": "網站可用性",
             "refId": "B"
-          },
-          {
-            "expr": "rate(nginx_http_requests_total{host=\"xsong.us\",status=~\"4..\"}[5m])",
-            "legendFormat": "客戶端錯誤 (4xx)",
-            "refId": "C"
-          },
-          {
-            "expr": "rate(nginx_http_requests_total{host=\"xsong.us\",status=~\"5..\"}[5m])",
-            "legendFormat": "伺服器錯誤 (5xx)",
-            "refId": "D"
           }
         ],
         "fieldConfig": {

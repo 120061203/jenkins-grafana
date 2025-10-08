@@ -1,0 +1,245 @@
+{
+  "id": null,
+  "title": "xsong.us 真實網站監控",
+  "tags": ["xsong.us", "production", "monitoring"],
+  "style": "dark",
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "網站可用性",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "probe_success{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+          "legendFormat": "xsong.us 可用性",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "回應時間",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "probe_duration_seconds{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+          "legendFormat": "回應時間",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "title": "HTTP 狀態碼",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "probe_http_status_code{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+          "legendFormat": "HTTP 狀態碼",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 200
+              },
+              {
+                "color": "yellow",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 400
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "id": 4,
+      "title": "SSL 憑證狀態",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "probe_ssl_earliest_cert_expiry{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"} - time()",
+          "legendFormat": "SSL 憑證剩餘天數",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "dtdurations"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      }
+    },
+    {
+      "id": 5,
+      "title": "網站效能趨勢",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "probe_duration_seconds{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+          "legendFormat": "回應時間",
+          "refId": "A"
+        },
+        {
+          "expr": "probe_success{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+          "legendFormat": "可用性",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      }
+    },
+    {
+      "id": 6,
+      "title": "HTTP 狀態碼歷史",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "probe_http_status_code{job=\"xsong.us-monitor\",instance=\"https://xsong.us\"}",
+          "legendFormat": "HTTP 狀態碼",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "schemaVersion": 27,
+  "version": 0
+}
