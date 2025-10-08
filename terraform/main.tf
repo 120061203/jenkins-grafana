@@ -15,27 +15,17 @@ provider "grafana" {
   auth = var.grafana_api_key
 }
 
-# 建立 Dashboard
-resource "grafana_dashboard" "sample_dashboard" {
-  config_json = file("${path.module}/../dashboard.json")
-  
-  # 設定 Dashboard 屬性
-  overwrite = true
-  
-  # 標籤
-  tags = ["jenkins", "automation", "terraform"]
-}
-
-# 建立資料夾（可選）
+# 建立資料夾
 resource "grafana_folder" "jenkins_dashboards" {
-  title = "Jenkins Dashboards"
+  title = var.folder_name
 }
 
-# 將 Dashboard 移動到指定資料夾
-resource "grafana_dashboard" "sample_dashboard_in_folder" {
+# 建立 Dashboard（在資料夾中）
+resource "grafana_dashboard" "xsong_monitoring_dashboard" {
   config_json = file("${path.module}/../dashboard.json")
   folder      = grafana_folder.jenkins_dashboards.id
   overwrite   = true
   
-  tags = ["jenkins", "automation", "terraform", "folder"]
+  # 使用變數設定標籤
+  tags = var.dashboard_tags
 }

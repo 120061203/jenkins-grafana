@@ -89,38 +89,19 @@ pipeline {
             }
         }
         
-        stage('📊 上傳 Dashboard') {
+        stage('📊 顯示部署結果') {
             steps {
-                echo '📊 上傳 Dashboard 到 Grafana Cloud...'
-                script {
-                    // 讀取並處理 dashboard.json
-                    def dashboardContent = readFile('dashboard.json')
-                    
-                    // 替換變數
-                    def processedDashboard = dashboardContent
-                        .replaceAll('"title": ".*"', "\"title\": \"${DASHBOARD_TITLE}\"")
-                        .replaceAll('"tags": \\[.*\\]', "\"tags\": [\"${DASHBOARD_TAGS}\"]")
-                    
-                    // 上傳到 Grafana
-                    def uploadResult = sh(
-                        script: """
-                            curl -X POST \\
-                                -H "Authorization: Bearer ${GRAFANA_API_KEY}" \\
-                                -H "Content-Type: application/json" \\
-                                -d '${processedDashboard}' \\
-                                ${GRAFANA_URL}/api/dashboards/db \\
-                                -w "HTTP_STATUS:%{http_code}"
-                        """,
-                        returnStdout: true
-                    )
-                    
-                    echo "📤 上傳結果: ${uploadResult}"
-                    
-                    if (uploadResult.contains('HTTP_STATUS:200') || uploadResult.contains('HTTP_STATUS:201')) {
-                        echo '✅ Dashboard 上傳成功！'
-                    } else {
-                        echo '⚠️ Dashboard 上傳可能失敗，請檢查回應'
-                    }
+                echo '📊 顯示 Terraform 部署結果...'
+                dir('terraform') {
+                    sh '''
+                        echo "=== Terraform 輸出 ==="
+                        terraform output
+                        echo ""
+                        echo "=== Dashboard 資訊 ==="
+                        echo "Dashboard URL: $(terraform output -raw dashboard_url)"
+                        echo "Dashboard UID: $(terraform output -raw dashboard_uid)"
+                        echo "資料夾 URL: $(terraform output -raw folder_url)"
+                    '''
                 }
             }
         }
