@@ -1,0 +1,121 @@
+# Grafana 告警規則範例 - xsong.us 網站監控
+# 此檔案包含針對 xsong.us 網站的告警規則
+
+groups:
+  - name: xsong.us-website-alerts
+    rules:
+      # 網站可用性告警
+      - alert: WebsiteDown
+        expr: probe_success{job="xsong.us-monitor"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "xsong.us 網站無法訪問"
+          description: "xsong.us 網站已經無法訪問超過 1 分鐘"
+
+      # 網站回應時間過長
+      - alert: WebsiteSlowResponse
+        expr: probe_duration_seconds{job="xsong.us-monitor"} > 3
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "xsong.us 網站回應時間過長"
+          description: "xsong.us 網站回應時間超過 3 秒，目前為 {{ $value }} 秒"
+
+      # HTTP 狀態碼錯誤
+      - alert: WebsiteHTTPError
+        expr: probe_http_status_code{job="xsong.us-monitor"} >= 400
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "xsong.us 網站 HTTP 錯誤"
+          description: "xsong.us 網站回傳 HTTP {{ $value }} 錯誤"
+
+      # SSL 憑證即將到期
+      - alert: SSLCertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry{job="xsong.us-monitor"} - time()) / 86400 < 30
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "xsong.us SSL 憑證即將到期"
+          description: "xsong.us SSL 憑證將在 {{ $value }} 天後到期"
+
+  - name: system-resource-alerts
+    rules:
+      # CPU 使用率過高
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU 使用率過高"
+          description: "實例 {{ $labels.instance }} 的 CPU 使用率為 {{ $value }}%"
+
+      # 記憶體使用率過高
+      - alert: HighMemoryUsage
+        expr: 100 - ((node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "記憶體使用率過高"
+          description: "實例 {{ $labels.instance }} 的記憶體使用率為 {{ $value }}%"
+
+      # 磁碟空間不足
+      - alert: DiskSpaceLow
+        expr: 100 - ((node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "磁碟空間不足"
+          description: "實例 {{ $labels.instance }} 的磁碟使用率為 {{ $value }}%"
+
+  - name: nginx-alerts
+    rules:
+      # Nginx 錯誤率過高
+      - alert: HighNginxErrorRate
+        expr: rate(nginx_http_requests_total{host="xsong.us",status=~"5.."}[5m]) / rate(nginx_http_requests_total{host="xsong.us"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nginx 錯誤率過高"
+          description: "xsong.us 的 5xx 錯誤率為 {{ $value | humanizePercentage }}"
+
+      # Nginx 請求量異常
+      - alert: NginxRequestRateAnomaly
+        expr: rate(nginx_http_requests_total{host="xsong.us"}[5m]) > 100
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Nginx 請求量異常"
+          description: "xsong.us 的請求量異常高，目前為 {{ $value }} req/s"
+
+  - name: mysql-alerts
+    rules:
+      # MySQL 連線數過多
+      - alert: MySQLTooManyConnections
+        expr: mysql_global_status_threads_connected > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 連線數過多"
+          description: "MySQL 目前有 {{ $value }} 個活躍連線"
+
+      # MySQL 慢查詢過多
+      - alert: MySQLSlowQueries
+        expr: rate(mysql_global_status_slow_queries[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 慢查詢過多"
+          description: "MySQL 慢查詢率為 {{ $value }} queries/s"

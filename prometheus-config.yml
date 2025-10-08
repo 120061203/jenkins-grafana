@@ -1,0 +1,69 @@
+# Prometheus 設定檔範例 - xsong.us 網站監控
+# 此檔案說明如何設定 Prometheus 來監控 xsong.us 網站
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # 可以添加告警規則檔案
+  # - "alert_rules.yml"
+
+scrape_configs:
+  # 監控 Prometheus 本身
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # 監控 Node Exporter (系統指標)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 5s
+
+  # 監控 Nginx (網站流量指標)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['localhost:9113']  # nginx-prometheus-exporter
+    scrape_interval: 5s
+
+  # 監控 MySQL (資料庫指標)
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['localhost:9104']  # mysqld-exporter
+    scrape_interval: 5s
+
+  # 監控 xsong.us 網站可用性 (Blackbox Exporter)
+  - job_name: 'xsong.us-monitor'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://xsong.us
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: localhost:9115  # blackbox-exporter
+
+  # 監控其他網站服務
+  - job_name: 'website-services'
+    static_configs:
+      - targets: 
+        - 'xsong.us:80'
+        - 'xsong.us:443'
+    scrape_interval: 10s
+
+# 告警規則範例
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# 告警規則範例
+rule_files:
+  - "alert_rules.yml"

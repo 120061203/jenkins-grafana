@@ -1,0 +1,11 @@
+# Terraform 變數範例檔案
+# 複製此檔案為 terraform.tfvars 並填入實際值
+
+# Grafana Cloud 設定
+grafana_url      = "https://your-instance.grafana.net"
+grafana_api_key  = "your-grafana-api-key-here"
+
+# Dashboard 設定
+dashboard_title = "xsong.us 網站監控 Dashboard"
+dashboard_tags  = ["xsong.us", "website", "monitoring", "traffic", "performance"]
+folder_name     = "Jenkins Dashboards"
