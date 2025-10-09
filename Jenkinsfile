@@ -23,9 +23,42 @@ pipeline {
                     echo "=== 環境資訊 ==="
                     echo "Jenkins 版本: $(java -version 2>&1 | head -1)"
                     echo "Git 版本: $(git --version)"
-                    echo "Terraform 版本: $(which terraform && terraform --version | head -1 || echo 'Terraform 未找到')"
                     echo "當前時間: $(date)"
                     echo "PATH: $PATH"
+                '''
+            }
+        }
+        
+        stage('🧩 檢查並安裝 Terraform') {
+            steps {
+                sh '''
+                echo "🔍 檢查 Terraform 是否存在..."
+                if ! command -v terraform >/dev/null 2>&1; then
+                  echo "⚙️ Terraform 未安裝，開始安裝..."
+                  
+                  # 檢測系統架構
+                  ARCH=$(uname -m)
+                  if [[ "$ARCH" == "arm64" ]]; then
+                    echo "📱 檢測到 ARM64 架構"
+                    TERRAFORM_URL="https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_darwin_arm64.zip"
+                  else
+                    echo "💻 檢測到 AMD64 架構"
+                    TERRAFORM_URL="https://releases.hashicorp.com/terraform/1.8.5/terraform_1.8.5_darwin_amd64.zip"
+                  fi
+                  
+                  # 下載並安裝 Terraform
+                  curl -fsSL "$TERRAFORM_URL" -o terraform.zip
+                  unzip -o terraform.zip
+                  sudo mv terraform /usr/local/bin/
+                  rm terraform.zip
+                  echo "✅ Terraform 安裝完成"
+                else
+                  echo "✅ Terraform 已存在"
+                fi
+                
+                echo "📋 Terraform 版本資訊:"
+                terraform -version
+                echo "📍 Terraform 路徑: $(which terraform)"
                 '''
             }
         }
