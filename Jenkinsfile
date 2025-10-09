@@ -52,8 +52,8 @@ pipeline {
                 echo '🚀 初始化 Terraform...'
                 dir('terraform') {
                     withEnv([
-                        "TF_VAR_grafana_url=${GRAFANA_URL}",
-                        "TF_VAR_grafana_api_key=${GRAFANA_API_KEY}"
+                        "TF_VAR_grafana_url=${env.GRAFANA_URL}",
+                        "TF_VAR_grafana_api_key=${env.GRAFANA_API_KEY}"
                     ]) {
                         sh '''
                             echo "=== Terraform 初始化 ==="
@@ -74,8 +74,8 @@ pipeline {
                 echo '📋 執行 Terraform 規劃...'
                 dir('terraform') {
                     withEnv([
-                        "TF_VAR_grafana_url=${GRAFANA_URL}",
-                        "TF_VAR_grafana_api_key=${GRAFANA_API_KEY}"
+                        "TF_VAR_grafana_url=${env.GRAFANA_URL}",
+                        "TF_VAR_grafana_api_key=${env.GRAFANA_API_KEY}"
                     ]) {
                         sh '''
                             echo "=== Terraform 規劃 ==="
@@ -92,8 +92,8 @@ pipeline {
                 echo '🔧 執行 Terraform 部署...'
                 dir('terraform') {
                     withEnv([
-                        "TF_VAR_grafana_url=${GRAFANA_URL}",
-                        "TF_VAR_grafana_api_key=${GRAFANA_API_KEY}"
+                        "TF_VAR_grafana_url=${env.GRAFANA_URL}",
+                        "TF_VAR_grafana_api_key=${env.GRAFANA_API_KEY}"
                     ]) {
                         sh '''
                             echo "=== Terraform 部署 ==="
