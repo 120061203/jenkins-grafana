@@ -25,7 +25,4 @@ resource "grafana_dashboard" "xsong_monitoring_dashboard" {
   config_json = file("${path.module}/../dashboard.json")
   folder      = grafana_folder.jenkins_dashboards.id
   overwrite   = true
-  
-  # 使用變數設定標籤
-  tags = var.dashboard_tags
 }
